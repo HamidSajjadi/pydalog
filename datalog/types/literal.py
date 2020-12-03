@@ -1,30 +1,30 @@
 from __future__ import annotations
 
-from typing import List, Iterable, Set, Union
+from typing import List, Union
 
 from .constant import Constant
-from .variable import Variable
 from .predicate import Predicate
+from .variable import Variable
 
 
 class Literal(Predicate):
     __slots__ = ["args"]
 
-    def __init__(self, predicate: Predicate = None, name: str = None, args: list = None):
-        if not predicate and not name:
-            raise AttributeError('provide either a name or a predicate object')
+    def __init__(self, predicate: Union[Predicate, str], *args):
 
         arity = 0 if not args else len(args)
-        if predicate:
+        if isinstance(predicate, Predicate):
             if predicate.arity != arity:
                 raise IndexError(
                     'predicate {} arity is {}, you provided {} arguments'.format(predicate, predicate.arity, arity))
             name = predicate.name
+        else:
+            name = predicate
 
         super().__init__(name, arity)
         self.__set_args(args)
 
-    def __set_args(self, args: list):
+    def __set_args(self, args: tuple):
 
         if not args:
             self.args = []
@@ -39,7 +39,7 @@ class Literal(Predicate):
                     converted_args.append(Variable(arg))
                 else:
                     converted_args.append(Constant(arg))
-        self.args = converted_args
+        self.args = tuple(converted_args)
 
     def predicate(self) -> Predicate:
         return Predicate(self.name, self.arity)

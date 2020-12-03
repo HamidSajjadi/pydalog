@@ -1,12 +1,14 @@
-from . import Predicate, Literal, Variable
+from typing import Union
+
+from . import Literal, Variable, Predicate
 
 
 class Fact(Literal):
 
-    def __init__(self, predicate: Predicate = None, name: str = None, args: list = None):
+    def __init__(self, name: Union[Predicate, str], *args):
 
-        for const in args:
-            if Variable.is_variable(const):
+        for arg in args:
+            if Variable.is_variable(arg):
                 raise TypeError('fact can not have variable')
 
-        super().__init__(predicate, name, args)
+        super().__init__(name, *args)
