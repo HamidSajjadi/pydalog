@@ -1,26 +1,27 @@
 from __future__ import annotations
 
-from typing import List, Iterable, Set
+from typing import List, Iterable, Set, Union
 
 from .constant import Constant
 from .variable import Variable
 
 
-class Predicate:
+class Literal:
     __slots__ = ["name", "_arity", "_args"]
 
     def __init__(self, name: str, args: list = None):
         self.name = name
         self._arity = 0 if not args else len(args)
-
         converted_args = []
         for arg in args:
-            if isinstance(arg, Variable):
+            if isinstance(arg, Variable) or isinstance(arg, Constant):
                 converted_args.append(arg)
             else:
                 converted_args.append(Constant(arg))
-        print(converted_args)
         self._args = converted_args
+
+    def get_variables(self) -> List[Variable]:
+        return [var for var in self._args if isinstance(var, Variable)]
 
     def arity(self):
         return self._arity
@@ -28,12 +29,9 @@ class Predicate:
     def args(self):
         return self._args
 
-    def get_variables(self) -> List[Variable]:
-        return [var for var in self._args if isinstance(var, Variable)]
+    def equal(self, other: Literal) -> bool:
 
-    def equal(self, other: Predicate) -> bool:
-
-        if not other or not isinstance(other, Predicate):
+        if not other or not isinstance(other, Literal):
             return False
 
         if other.name != self.name:

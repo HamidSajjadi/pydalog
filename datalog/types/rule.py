@@ -1,4 +1,4 @@
-from .predicate import Predicate
+from .literal import Literal
 from datalog.exceptions import RangeRuleError
 
 
@@ -8,10 +8,10 @@ class Rule:
     """
     __slots__ = ['_label', 'head', 'body', 'ground', '__head_variables', '__body_variables']
 
-    def __init__(self, label: str, head: Predicate, body: list):
+    def __init__(self, label: str, head: Literal, body: list):
         self._label = label
 
-        if not isinstance(head, Predicate):
+        if not isinstance(head, Literal):
             raise TypeError('Head should be a predicate')
 
         if not body or not len(body):

@@ -6,13 +6,12 @@ class Constant:
 
     def __init__(self, value):
         if not value:
-            raise Exception('Provide a name for variable')
+            raise Exception('Provide a value for constant')
         self.value = value
 
     def equal(self, other: Constant):
         if not other or not isinstance(other, Constant):
             return False
-
         return self.value == other.value
 
     def __to_string(self):

@@ -1,10 +1,10 @@
-from .predicate import Predicate
+from .literal import Literal
 from .variable import Variable
 
-class Fact(Predicate):
+class Fact(Literal):
     __slots__ = ['predicate', 'constants']
 
-    def __init__(self, predicate: Predicate, constants: list = None):
+    def __init__(self, predicate: Literal, constants: list = None):
         def not_correct_arity():
             return (predicate._arity and not constants) or (predicate._arity != len(constants))
 
