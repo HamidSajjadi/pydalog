@@ -9,7 +9,7 @@ class Variable:
         if not name:
             raise Exception('Provide a name for variable')
 
-        if not re.match(r"\b[A-Z].*?\b", name):
+        if not Variable.is_variable(name):
             raise Exception('{} is invalid as a variable, it should start with capital letter'.format(name))
 
         self.name = name
@@ -33,3 +33,11 @@ class Variable:
 
     def __hash__(self):
         return hash('Variable' + self.__to_string())
+
+    @staticmethod
+    def is_variable(var):
+        if isinstance(var, Variable):
+            return True
+        if isinstance(var, str) and re.match(r"\b[A-Z].*?\b", var):
+            return True
+        return False

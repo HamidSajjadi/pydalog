@@ -1,18 +1,12 @@
-from .literal import Literal
-from .variable import Variable
+from . import Predicate, Literal, Variable
+
 
 class Fact(Literal):
-    __slots__ = ['predicate', 'constants']
 
-    def __init__(self, predicate: Literal, constants: list = None):
-        def not_correct_arity():
-            return (predicate._arity and not constants) or (predicate._arity != len(constants))
+    def __init__(self, predicate: Predicate = None, name: str = None, args: list = None):
 
-        if not_correct_arity():
-            raise Exception('arity and number of constants are not compatible')
-
-        for const in constants:
-            if isinstance(const, Variable):
+        for const in args:
+            if Variable.is_variable(const):
                 raise TypeError('fact can not have variable')
 
-        super().__init__(predicate.name, constants)
+        super().__init__(predicate, name, args)

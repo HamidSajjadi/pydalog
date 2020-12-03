@@ -1,10 +1,17 @@
-from datalog.types import Literal, Variable, Fact, Rule, Constant
+from datalog.types import Literal, Variable, Fact, Rule, Constant, Predicate
+from datalog import Datalog
 
 
 def run():
-    father_pred = Literal('father', [Variable('X'), Variable('Z'), '2', 2])
-    print(father_pred)
-    print([Variable('S')] == [Variable('S')])
+    pred = Predicate('father', 2)
+    literal = Literal(predicate=pred, args=['X', 'y'])
+    print(literal)
+
+    program = Datalog() \
+        .add_literal('father',['X', 'Y']) \
+        .add_fact('father', ['ali', 'hossein'])
+
+    print(program.get_predicates())
 
 
 if __name__ == '__main__':
