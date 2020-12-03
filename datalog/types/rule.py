@@ -1,5 +1,5 @@
 from .predicate import Predicate
-from datalog.exceptions import RuleRangeError
+from datalog.exceptions import RangeRuleError
 
 
 class Rule:
@@ -34,11 +34,11 @@ class Rule:
         body_variables.extend([b.get_variables for b in self.body])
 
         if len(head_variables) > len(body_variables):
-            return RuleRangeError(self._label)
+            return RangeRuleError(self._label)
 
         for var in head_variables:
             if var not in body_variables:
-                return RuleRangeError(self._label)
+                return RangeRuleError(self._label)
 
         # all elements were same.
         return True
