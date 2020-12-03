@@ -1,0 +1,8 @@
+.code
+.idea
+
+venv
+__pycache__/
+
+# Jupyter Notebook
+.ipynb_checkpoints
