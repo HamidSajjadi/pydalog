@@ -1,5 +1,7 @@
-from .literal import Literal
+from typing import List
+
 from datalog.exceptions import RangeRuleError
+from .literal import Literal
 
 
 class Rule:
@@ -19,10 +21,20 @@ class Rule:
                 'you should add a predicate in rule body, if you want to define a rule with no body (aka fact), use a '
                 'Fact object')
 
+        bodies_as_literal = []
+        for b in body:
+            b_literal = b if isinstance(b, Literal) else Literal(b[0], *b[1:])
+            bodies_as_literal.append(b_literal)
+
         self.head = head
-        self.body = body
+        self.body: List[Literal] = bodies_as_literal
 
         self.__assert_range_of_rule()
+
+    def substitute(self, bindings: dict):
+        head_sub = self.head.substitute(bindings)
+        body_sub = [b.substitute(bindings) for b in self.body]
+        return Rule(label=self._label, head=head_sub, body=body_sub)
 
     def __assert_range_of_rule(self):
         """
@@ -45,3 +57,6 @@ class Rule:
 
     def __str__(self) -> str:
         return '{}: {} <== {}'.format(self._label, self.head, ', '.join([arg.__str__() for arg in self.body]))
+
+    def __repr__(self):
+        return self.__str__()

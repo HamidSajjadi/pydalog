@@ -1,9 +1,10 @@
 from __future__ import annotations
+
 import re
 
 
 class Variable:
-    __slots__ = ['name']
+    name: str
 
     def __init__(self, name: str):
         if not name:

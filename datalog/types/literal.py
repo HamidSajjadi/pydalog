@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import List, Union
+from typing import List, Union, Dict
 
 from .constant import Constant
 from .predicate import Predicate
@@ -44,6 +44,10 @@ class Literal(Predicate):
     def predicate(self) -> Predicate:
         return Predicate(self.name, self.arity)
 
+    def substitute(self, bindings: dict):
+        new_args = [bindings[arg] if arg in bindings.keys() else arg for arg in self.args]
+        return Literal(self.predicate(), *new_args)
+
     def get_variables(self) -> List[Variable]:
         return [var for var in self.args if isinstance(var, Variable)]
 
@@ -84,3 +88,42 @@ class Literal(Predicate):
 
     def __hash__(self):
         return self.__to_string().__hash__()
+
+    def __lt__(self, other: Literal):
+        return self.__to_string().__lt__(other.__str__())
+
+    @staticmethod
+    def get_binding(literal: Literal, fact: Fact) -> dict:
+        if literal.predicate() != fact.predicate():
+            raise Exception('fact and literal are not of the same predicate')
+        binding = {}
+        for i, _ in enumerate(literal.args):
+            binding[literal.args[i]] = fact.args[i]
+        return binding
+
+
+class Fact(Literal):
+
+    def match(self, literal: Literal, original_bindings=None):
+        bindings: Dict[Variable, str] = {}
+        if original_bindings:
+            for key, value in original_bindings.items():
+                bindings[Variable(key)] = value
+
+        if literal.predicate() != self.predicate():
+            return False
+
+        for i, var in enumerate(literal.args):
+            if Variable.is_variable(var):
+                if var in bindings and bindings[var] != self.args[i]:
+                    return False
+                bindings[var] = self.args[i]
+        return bindings
+
+    def __init__(self, name: Union[Predicate, str], *args):
+
+        for arg in args:
+            if Variable.is_variable(arg):
+                raise TypeError('fact can not have variable')
+
+        super().__init__(name, *args)

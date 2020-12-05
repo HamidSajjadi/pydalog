@@ -1,7 +1,5 @@
-from .predicate import Predicate
-from .variable import Variable
 from .constant import Constant
-from .literal import Literal
+from .literal import Literal, Fact
+from .predicate import Predicate
 from .rule import Rule
-from .fact import Fact
-
+from .variable import Variable
