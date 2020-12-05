@@ -1,18 +1,17 @@
-from datalog.types import Literal, Predicate, Fact
+from datalog import Datalog
 
 
 def run():
-    pred = Predicate('father', 2)
-    literal = Literal('father', 'X', 'Y')
-    fact = Fact('father', 'ali', 'hosein')
-    print(fact)
-    print(literal)
-    # program = Datalog() \
-    #     .add_literal('father', 'X', 'Y') \
-    #     .add_fact('father', ('ali', 'hossein')) \
-    #     .add_rule(('parent', 'X', 'Y'), (('father'), ('X', 'Y')))
-    #
-    # print(program.get_predicates())
+    # pred = Predicate('father', 2)
+    # literal = Literal('father', 'X', 'Y')
+    # fact = Fact('father', 'ali', 'hosein')
+    # print(fact)
+    # print(literal)
+    program = Datalog() \
+        .add_fact('father', 'ali', 'hossein') \
+        .add_rule(head=('parent', 'X', 'Y'), body=(('father', 'X', 'Y'),))
+
+    print(program)
 
 
 if __name__ == '__main__':

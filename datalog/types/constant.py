@@ -21,7 +21,7 @@ class Constant:
         return self.equal(other)
 
     def __hash__(self):
-        return hash('Constant' + self.value)
+        return ('constant' + self.__to_string()).__hash__()
 
     def __repr__(self):
         return self.__to_string()

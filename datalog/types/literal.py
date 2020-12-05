@@ -83,4 +83,4 @@ class Literal(Predicate):
         return self.__to_string()
 
     def __hash__(self):
-        return self.__to_string()
+        return self.__to_string().__hash__()

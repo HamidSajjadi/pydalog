@@ -24,7 +24,8 @@ class Predicate:
         return 'Predicate {}/{}'.format(self.name, self.arity)
 
     def __hash__(self):
-        return hash('predicate' + self.name)
+        representation = 'predicate' + self.name
+        return representation.__hash__()
 
     def __repr__(self):
         return self.__to_string()

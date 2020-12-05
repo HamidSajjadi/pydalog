@@ -1,5 +1,6 @@
 from __future__ import annotations
-from typing import Dict, List
+
+from typing import Dict, List, Union
 
 from .types import Predicate, Literal, Fact, Rule
 
@@ -20,21 +21,22 @@ class Datalog:
             self.__check_literal_arity(predicate)
         return self
 
-    def add_literal(self, name: str = None, args: tuple = None, literal: Literal = None, ) -> Datalog:
-        if not literal and not name:
-            raise Exception('Provide either and literal object, or a name for the literal')
+    def add_literal(self, literal: Union[str, Literal] = None, *args) -> Datalog:
         if not literal:
-            literal = Literal(name=name, args=args)
+            raise Exception('Provide either and literal object, or a name for the literal')
+        if not isinstance(literal, Literal):
+            print(*args)
+            literal = Literal(literal, *args)
         literal_pred = literal.predicate()
         self.__add_or_get_predicate(literal_pred)
         self.__literals.append(literal)
         return self
 
-    def add_fact(self, name: str = None, args: tuple = None, fact=None) -> Datalog:
-        if not fact and not name:
-            raise Exception('Provide either and literal object, or a name for the fact')
+    def add_fact(self, fact: Union[str, Fact] = None, *args) -> Datalog:
         if not fact:
-            fact = Fact(name=name, args=args)
+            raise Exception('Provide either and literal object, or a name for the fact')
+        if not isinstance(fact, Fact):
+            fact = Fact(fact, *args)
         fact.predicate()
         self.add_predicate(fact.predicate())
         self.__facts.append(fact)
@@ -59,3 +61,23 @@ class Datalog:
         else:
             predicate = self.__predicates_dict[predicate.name]
         return predicate
+
+    def add_rule(self, head: Union[tuple, Literal], body: tuple, label: str = None):
+        if not label:
+            label = 'r' + str(len(self.__rules) + 1)
+        head_as_literal = head if isinstance(head, Literal) else Literal(head[0], head[1:])
+        bodies_as_literal = [b if isinstance(b, Literal) else Literal(b[0], b[1:]) for b in body]
+        rule = Rule(label, head=head_as_literal, body=bodies_as_literal)
+        self.__rules.append(rule)
+        return self
+
+    def __str__(self):
+        final_string = ''
+        if len(self.__facts):
+            final_string += ',\n'.join([fact.__str__() for fact in self.__facts]) + '\n'
+        if len(self.__literals):
+            final_string += ',\n'.join([literal.__str__() for literal in self.__literals]) + '\n'
+        if len(self.__rules):
+            final_string += ',\n'.join(rule.__str__() for rule in self.__rules) + '\n'
+
+        return final_string
