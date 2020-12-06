@@ -35,5 +35,5 @@ program.query('married', 'sara', 'akbar') # returns False
 ```
 
 
-look at run.py for example of a simple datalog program
+look and run `run.py` for more details
 
