@@ -1,10 +1,12 @@
 from __future__ import annotations
 
-from typing import List, Union, Dict, Tuple
+from typing import List, Union, Dict, Tuple, TypeVar
 
 from .constant import Constant
 from .predicate import Predicate
 from .variable import Variable
+
+
 
 
 class Literal(Predicate):
@@ -91,6 +93,9 @@ class Literal(Predicate):
                 return False, bindings
         return True, bindings
 
+    def is_builtin(self):
+        return False
+
     def __to_string(self):
         return "{}({})".format(self.name,
                                ', '.join([arg.__str__() for arg in self.args]) if self.arity else '')
@@ -136,6 +141,18 @@ class Literal(Predicate):
         if Literal.is_fact(literal):
             return Fact(literal.predicate(), *literal.args)
         return literal
+
+    @staticmethod
+    def eq(*args):
+        return Literal('eq', *args)
+
+    @staticmethod
+    def neq(*args):
+        return Literal('neq', *args)
+
+    @staticmethod
+    def lt(*args):
+        return Literal('lt', *args)
 
 
 class Fact(Literal):

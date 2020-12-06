@@ -105,12 +105,16 @@ class Datalog:
             temp_new = self.match_rules(effected_rules)
             new_facts = temp_new
 
-    def query(self, literal: Union[str, Literal], *args):
-        if not isinstance(literal, Literal):
-            predicate_obj = Predicate(literal, len(args))
-            literal = Literal(literal, *args)
+    def query(self, queried_literal: Union[str, Literal], *args) -> Union[List[Dict[Variable, str]], bool]:
+        """
+            given a Literal, tries to infer answers that satisfy that literal
+            given a Fact, checks if this fact is True based on the database or not
+        """
+        if not isinstance(queried_literal, Literal):
+            predicate_obj = Predicate(queried_literal, len(args))
+            queried_literal = Literal(queried_literal, *args)
         else:
-            predicate_obj = literal.predicate()
+            predicate_obj = queried_literal.predicate()
         if predicate_obj.name not in self.__predicates_dict.keys():
             raise ValueError('Predicate {} does not exists in the program')
         program_predicate = self.__predicates_dict[predicate_obj.name]['predicate']
@@ -119,12 +123,12 @@ class Datalog:
                                                                            predicate_obj.arity))
         self.extend_db()
 
-        if Literal.is_fact(literal):
-            return self.check_validity(Literal.to_fact(literal))
+        if Literal.is_fact(queried_literal):
+            return self.check_validity(Literal.to_fact(queried_literal))
         else:
-            return self.find_answers(literal)
+            return self.find_answers(queried_literal)
 
-    def check_validity(self, fact_queried: Fact):
+    def check_validity(self, fact_queried: Fact) -> bool:
         predicate_name = fact_queried.predicate().name
         return fact_queried in self.__predicates_dict[predicate_name]['facts']
 

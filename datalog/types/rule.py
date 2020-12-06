@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-
 from typing import List, Iterable
 
 from datalog.exceptions import RangeRuleError
+from .built_in_literal import BuiltInLiteralAbstract
 from .literal import Literal, Fact
 
 
@@ -47,9 +47,16 @@ class Rule:
         goal = goals[0]
         last_goal = len(goals) == 1
         answers = []
+        if goal.is_builtin() or isinstance(goal, BuiltInLiteralAbstract):
+            matched, new_bindings = goal.evaluate(bindings)
+            if matched:
+                if last_goal:
+                    answers.append(new_bindings)
+                else:
+                    answers.extend(self.match_goals(facts, goals[1:], new_bindings))
         for fact in facts:
-            match, new_bindings = fact.unify(goal, bindings)
-            if match:
+            matched, new_bindings = fact.unify(goal, bindings)
+            if matched:
                 if last_goal:
                     answers.append(new_bindings)
                 else:

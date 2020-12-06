@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from .variable import Variable
+
 
 class Constant:
     __slots__ = ['value']
@@ -10,8 +12,13 @@ class Constant:
         self.value = value
 
     def equal(self, other: Constant):
-        if not other or not isinstance(other, Constant):
+        if not other:
             return False
+        if Variable.is_variable(other):
+            return False
+        if not isinstance(other, Constant):
+            return self.value == other
+        
         return self.value == other.value
 
     def __to_string(self):
