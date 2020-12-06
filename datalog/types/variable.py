@@ -33,7 +33,7 @@ class Variable:
         return self.equal(other)
 
     def __hash__(self):
-        return hash('Variable' + self.__to_string())
+        return hash('Variable') + self.name.__hash__()
 
     @staticmethod
     def is_variable(var):

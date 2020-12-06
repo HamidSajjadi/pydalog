@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import List, Union, Dict
+from typing import List, Union, Dict, Tuple
 
 from .constant import Constant
 from .predicate import Predicate
@@ -30,7 +30,7 @@ class Literal(Predicate):
             self.args = []
             return
 
-        converted_args = []
+        converted_args: List[Union[Variable, Constant]] = []
         for arg in args:
             if isinstance(arg, Variable) or isinstance(arg, Constant):
                 converted_args.append(arg)
@@ -68,6 +68,29 @@ class Literal(Predicate):
 
         return True
 
+    def unify(self, other: Literal, bindings: dict = None) -> Tuple[bool, dict]:
+        if not bindings:
+            bindings = {}
+        if self.predicate() != other.predicate() or self.arity != other.arity:
+            return False, bindings
+        for i in range(self.arity):
+            term1 = self.args[i]
+            term2 = other.args[i]
+            if Variable.is_variable(term1):
+                if term1 != term2:
+                    if term1 not in bindings:
+                        bindings[term1] = term2
+                    elif bindings[term1] != term2:
+                        return False, bindings
+            elif Variable.is_variable(term2):
+                if term2 not in bindings:
+                    bindings[term2] = term1
+                elif bindings[term2] != term1:
+                    return False, bindings
+            elif term1 != term2:
+                return False, bindings
+        return True, bindings
+
     def __to_string(self):
         return "{}({})".format(self.name,
                                ', '.join([arg.__str__() for arg in self.args]) if self.arity else '')
@@ -101,6 +124,19 @@ class Literal(Predicate):
             binding[literal.args[i]] = fact.args[i]
         return binding
 
+    @staticmethod
+    def is_fact(literal: Literal):
+        for arg in literal.args:
+            if Variable.is_variable(arg):
+                return False
+        return True
+
+    @staticmethod
+    def to_fact(literal: Literal):
+        if Literal.is_fact(literal):
+            return Fact(literal.predicate(), *literal.args)
+        return literal
+
 
 class Fact(Literal):
 
@@ -108,20 +144,24 @@ class Fact(Literal):
         bindings: Dict[Variable, str] = {}
         if original_bindings:
             for key, value in original_bindings.items():
-                bindings[Variable(key)] = value
+                if not isinstance(key, Variable) and Variable.is_variable(key):
+                    key = Variable(key)
+                bindings[key] = value
 
         if literal.predicate() != self.predicate():
-            return False
+            return False, []
 
         for i, var in enumerate(literal.args):
             if Variable.is_variable(var):
                 if var in bindings and bindings[var] != self.args[i]:
-                    return False
+                    return False, []
                 bindings[var] = self.args[i]
-        return bindings
+            else:
+                if var != self.args[i]:
+                    return False, []
+        return True, bindings
 
     def __init__(self, name: Union[Predicate, str], *args):
-
         for arg in args:
             if Variable.is_variable(arg):
                 raise TypeError('fact can not have variable')

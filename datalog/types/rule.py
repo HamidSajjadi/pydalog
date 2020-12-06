@@ -1,7 +1,10 @@
-from typing import List
+from __future__ import annotations
+
+
+from typing import List, Iterable
 
 from datalog.exceptions import RangeRuleError
-from .literal import Literal
+from .literal import Literal, Fact
 
 
 class Rule:
@@ -31,10 +34,28 @@ class Rule:
 
         self.__assert_range_of_rule()
 
-    def substitute(self, bindings: dict):
+    def substitute(self, bindings: dict) -> Rule:
         head_sub = self.head.substitute(bindings)
         body_sub = [b.substitute(bindings) for b in self.body]
         return Rule(label=self._label, head=head_sub, body=body_sub)
+
+    def match_goals(self, facts: Iterable[Fact], goals: Iterable[Literal] = None, bindings: dict = None):
+        if not goals:
+            goals = self.body
+        if not bindings:
+            bindings = {}
+        goal = goals[0]
+        last_goal = len(goals) == 1
+        answers = []
+        for fact in facts:
+            match, new_bindings = fact.unify(goal, bindings)
+            if match:
+                if last_goal:
+                    answers.append(new_bindings)
+                else:
+                    answers.extend(self.match_goals(facts, goals[1:], new_bindings))
+
+        return answers
 
     def __assert_range_of_rule(self):
         """

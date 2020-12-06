@@ -81,29 +81,18 @@ class Datalog:
     def match_rules(self, rules: Iterable[Rule]) -> List[Fact]:
         new_facts = []
         for rule in rules:
-            answers, facts = self.match_rule(rule)
+            answers, facts = self.__match_rule(rule)
             new_facts.extend(facts)
         return new_facts
 
-    def match_rule(self, rule: Rule) -> Tuple[List[Dict[Variable, str]], List[Fact]]:
-        answers: List[Dict[Variable, str]] = []
-        for i, literal in enumerate(rule.body):
-            for fact in self.get_predicate_facts(literal.predicate()):
-                temp_binding = fact.match(literal)
-                if temp_binding:
-                    match_found = True
-                    for other_literal in rule.body[i:]:
-                        if not fact.match(other_literal, temp_binding):
-                            match_found = False
-                            break
-                    if match_found:
-                        answers.append(temp_binding)
+    def __match_rule(self, rule: Rule) -> Tuple[List[Dict[Variable, str]], List[Fact]]:
+        answers = rule.match_goals(self.__facts)
         new_facts = []
         for ans in answers:
-            new_fact = Fact(rule.head.predicate(), *ans.values())
-            if new_fact not in self.__facts:
-                self.add_fact(new_fact)
-                new_facts.append(new_fact)
+            fact: Fact = rule.head.substitute(ans)
+            if fact not in self.__facts:
+                self.__add_fact(fact, fact.predicate())
+                new_facts.append(fact)
         return answers, new_facts
 
     def extend_db(self):
@@ -115,9 +104,39 @@ class Datalog:
                 effected_rules.update(self.__predicates_dict[fact.name]['rules'])
             temp_new = self.match_rules(effected_rules)
             new_facts = temp_new
-            print("====")
-            print(new_facts)
-            print("==========")
+
+    def query(self, literal: Union[str, Literal], *args):
+        if not isinstance(literal, Literal):
+            predicate_obj = Predicate(literal, len(args))
+            literal = Literal(literal, *args)
+        else:
+            predicate_obj = literal.predicate()
+        if predicate_obj.name not in self.__predicates_dict.keys():
+            raise ValueError('Predicate {} does not exists in the program')
+        program_predicate = self.__predicates_dict[predicate_obj.name]['predicate']
+        if predicate_obj != program_predicate:
+            raise ValueError('Predicate {} has arity of {}, not {}'.format(program_predicate, program_predicate.arity,
+                                                                           predicate_obj.arity))
+        self.extend_db()
+
+        if Literal.is_fact(literal):
+            return self.check_validity(Literal.to_fact(literal))
+        else:
+            return self.find_answers(literal)
+
+    def check_validity(self, fact_queried: Fact):
+        predicate_name = fact_queried.predicate().name
+        return fact_queried in self.__predicates_dict[predicate_name]['facts']
+
+    def find_answers(self, literal: Literal):
+        answers = []
+        predicate = literal.predicate()
+        for fact in self.__predicates_dict[predicate.name]['facts']:
+
+            matched, ans = fact.match(literal)
+            if matched:
+                answers.append(ans)
+        return answers
 
     def get_predicate_facts(self, pred: Predicate) -> Set[Fact]:
         return self.__predicates_dict[pred.name]['facts']
@@ -187,6 +206,8 @@ class Datalog:
             self.__predicates_dict[b.name]['dependants'].add(head_pred)
 
     def __add_fact(self, fact: Fact, predicate: Predicate):
+        if Fact.is_fact(fact):
+            fact = Literal.to_fact(fact)
         self.__facts.add(fact)
         if 'facts' in self.__predicates_dict[predicate.name].keys():
             self.__predicates_dict[predicate.name]['facts'].add(fact)
