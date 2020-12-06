@@ -3,7 +3,9 @@ Python implementation of a very basic, inefficient datalog
 
 
 ## Example
-Creating a new datalog program
+
+#### Create Datalog Program
+
 ```python
 from datalog import Datalog
 
@@ -19,6 +21,7 @@ program = Datalog() \
         .add_rule(head=('descendant', 'X', 'Y'), body=(('parent', 'X', 'Z'), ('parent', 'Z', 'Y')))
 ```
 
+#### Query Program
 Compile the program and fetch new rules using `extend_db()` function
 ```python
 program.extend_db()
@@ -33,6 +36,25 @@ program.query('married', 'sara', 'ahmad') # returns True
 program.query('married', 'sara', 'akbar') # returns False
 
 ```
+
+#### Built-In Literals
+some arithmetic operators are built in
+`=`, `!=`, `<`, `<=`, `>`, `>=`
+
+`=`, `!=` can compare anything. But other built-ins need float as their arguments.
+
+usage:
+```python
+from datalog.types import Eq, Lt, Gt, Lte, Neq
+
+       program()\
+       .add_rule(head=('child', 'X'), body=(('age', 'X', 'Y'), Lt('Y', 12))) \
+
+```
+
+
+
+
 
 
 look and run `run.py` for more details
